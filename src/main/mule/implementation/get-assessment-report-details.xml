@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"  xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="get-assessment-report-details" doc:id="14239307-cf18-4b37-9c67-725491c4e2ba" >
+		<scatter-gather doc:name="Scatter-Gather" doc:id="6e1c8868-9a7f-480b-8bdc-3958281b872b" >
+			<route >
+				<logger level="INFO" doc:name="Request Get Assessment SAPI  Logger" doc:id="12b6a478-cac5-4721-bb4d-5b89245e848d" message="#[%dw 2.0 &#10;output application/json indent = false &#10;--- &#10;{ 	&#10;    TimeStamp: now(), &#10;    transactionId: vars.requestMessage.attributes.headers.'x-fms-transactionid',&#10;    AppName: app.name, 	&#10;    FlowName: flow.name, 	&#10;    BusinessProcessName:  &quot;Get Assessment Details&quot;,	&#10;    Category:  &quot;Fund Management&quot;, &#10;    OriginatingApplication:  &quot;Exprience API&quot;, 	&#10;    DesinationApplication:  &quot;GET Assessment SAPI&quot;, 	&#10;    CustomerId: &quot;NA&quot;, 	&#10;    txnState:  &quot;Request SAPI&quot; &#10;}]" />
+				<http:request method="GET" doc:name="Request Get Assessment SAPI" doc:id="dbdfe835-f96f-4473-8b89-d3a5b23b6372" config-ref="HTTP_Request_configuration_Assessment_SAPI" path="${sapi.path.assessment}" responseTimeout="9000000">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"x-fms-clientId" : vars.requestMessage.attributes.headers.'x-fms-clientId',
+	"x-fms-transactionId" : vars.requestMessage.attributes.headers.'x-fms-transactionId',
+	"x-fms-clientSecret" : vars.requestMessage.attributes.headers.'x-fms-clientSecret'
+}]]]></http:headers>
+		</http:request>
+				<logger level="INFO" doc:name="Response Get Assessment SAPI Logger" doc:id="71c69af0-c398-4105-9804-bfff92ef7f6e" message="#[%dw 2.0 &#10;output application/json indent = false &#10;--- &#10;{ 	&#10;    TimeStamp: now(), &#10;    transactionId: vars.requestMessage.attributes.headers.'x-fms-transactionid',&#10;    AppName: app.name, 	&#10;    FlowName: flow.name, 	&#10;    BusinessProcessName:  &quot;Get Assessment Details&quot;,	&#10;    Category:  &quot;Fund Management&quot;, &#10;    OriginatingApplication:  &quot;Exprience API&quot;, 	&#10;    DesinationApplication:  &quot;GET Assessment SAPI&quot;, 	&#10;    CustomerId: &quot;NA&quot;, 	&#10;    txnState:  &quot;Response SAPI&quot; &#10;}]" />
+			</route>
+			<route >
+				<logger level="INFO" doc:name="Request Get Assessment Report SAPI  Logger" doc:id="f05cf02a-fd4f-46b0-a168-fdf758c1172c" message="#[%dw 2.0 &#10;output application/json indent = false &#10;--- &#10;{ 	&#10;    TimeStamp: now(), &#10;    transactionId: vars.requestMessage.attributes.headers.'x-fms-transactionid',&#10;    AppName: app.name, 	&#10;    FlowName: flow.name, 	&#10;    BusinessProcessName:  &quot;Get Assessment Details&quot;,	&#10;    Category:  &quot;Fund Management&quot;, &#10;    OriginatingApplication:  &quot;Exprience API&quot;, 	&#10;    DesinationApplication:  &quot;GET Assessment SAPI&quot;, 	&#10;    CustomerId: &quot;NA&quot;, 	&#10;    txnState:  &quot;Request SAPI&quot; &#10;}]" />
+				<http:request method="GET" doc:name="Request Assessment Report SAPI" doc:id="769a30bf-6b38-4a85-a60c-814722927a3e" config-ref="HTTP_Request_configuration_Assessment_SAPI" path="${sapi.path.assessmentReport}/{customerId}" responseTimeout="9000000">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"x-fms-clientId" : vars.requestMessage.attributes.headers.'x-fms-clientId',
+	"x-fms-transactionId" : vars.requestMessage.attributes.headers.'x-fms-transactionId',
+	"x-fms-clientSecret" : vars.requestMessage.attributes.headers.'x-fms-clientSecret'
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"customerId" : vars.requestMessage.attributes.uriParams.customerId
+}]]]></http:uri-params>
+		
+</http:request>
+				<logger level="INFO" doc:name="Response Get Assessment Report SAPI Logger" doc:id="3ead896f-1f22-407b-9ffb-c76a6942b65c" message="#[%dw 2.0 &#10;output application/json indent = false &#10;--- &#10;{ 	&#10;    TimeStamp: now(), &#10;    transactionId: vars.requestMessage.attributes.headers.'x-fms-transactionid',&#10;    AppName: app.name, 	&#10;    FlowName: flow.name, 	&#10;    BusinessProcessName:  &quot;Get Assessment Details&quot;,	&#10;    Category:  &quot;Fund Management&quot;, &#10;    OriginatingApplication:  &quot;Exprience API&quot;, 	&#10;    DesinationApplication:  &quot;GET Assessment SAPI&quot;, 	&#10;    CustomerId: &quot;NA&quot;, 	&#10;    txnState:  &quot;Response SAPI&quot; &#10;}]" />
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Get Detail Response Transform Message" doc:id="98099387-f7c3-4da4-9caa-33e8473eec74">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Arrays
+var assessment = payload.'0'.payload.retrieveAssessmnetResponce
+var assessmentReport = payload.'1'.payload.assessmnetReportResponse
+fun reportResult(assessmentReport) = {
+	resultReport: finalResult (assessment map(item,index2) -> 
+	{
+		"question": assessmentReport.assessmentdetails filter ((value,index1) -> ((value.question == item.question) and (value.answer == item.answer)))
+	})
+	
+}
+
+fun finalResult(resultVar) = {
+	result:  ((resultVar.question countBy ($ != [])) / (sizeOf(resultVar.question)))* 100
+}
+---
+{
+  "assessmnetReportResponse": {
+    "userDetails": {
+      "userId": assessmentReport.userDetails.userId,
+      "name": assessmentReport.userDetails.name
+    },
+    "assessmentdetails": reportResult(assessmentReport).resultReport
+    ,
+    "submitionDateTime": assessmentReport.submitionDateTime
+  }
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response Assessment SAPI Logger" doc:id="a337c421-a865-4a41-b4f8-bb2e25aba188" message="#[%dw 2.0 &#10;output application/json indent = false &#10;--- &#10;{ 	&#10;    TimeStamp: now(), &#10;    transactionId: vars.requestMessage.attributes.headers.'x-fms-transactionid',&#10;    AppName: app.name, 	&#10;    FlowName: flow.name, 	&#10;    BusinessProcessName:  &quot;Get Assessment Details&quot;,	&#10;    Category:  &quot;Fund Management&quot;, &#10;    OriginatingApplication:  &quot;Exprience API&quot;, 	&#10;    DesinationApplication:  &quot;GET Assessment SAPI&quot;, 	&#10;    CustomerId: &quot;NA&quot;, 	&#10;    txnState:  &quot;Response SAPI&quot; &#10;}]" />
+	</sub-flow>
+</mule>
+
+

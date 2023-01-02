@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xml-module="http://www.mulesoft.org/schema/mule/xml-module" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/xml-module http://www.mulesoft.org/schema/mule/xml-module/current/mule-xml-module.xsd">
+	<flow name="batch-process" doc:id="adc81438-090e-4940-b5d8-4d32576b7f87" maxConcurrency="100">
+		<batch:job jobName="scheduler-assessment-report-sfdc-dbBatch_Job" doc:id="881465a3-6fd0-4986-acb9-e6bd32d1d7b4" >
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="16277ca1-e75b-4fb5-8b75-9dd0ff43d159" acceptPolicy="ALL">
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="205f82f2-5ebe-4437-9716-1eb652635959" size="100">
+						<ee:transform doc:name="Transform Message" doc:id="2e6df6cd-2b7a-408a-98c9-8851c5fa7b35" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[output application/json
+---
+payload[0].entry.value map()->{
+	"recordAssessmnetRequest" : $
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<http:request method="POST" doc:name="Request GET Assessment Report SAPI1" doc:id="35257724-2175-4658-9d09-f937d6eec481" config-ref="HTTP_Request_configuration_Assessment_SAPI" path="${sapi.path.assessmentReport}" responseTimeout="90000000">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"x-fms-clientId" : p('clientId'),
+	"x-fms-transactionId" : vars.transactionId,
+	"x-fms-clientSecret" : p('clientSecret')
+}]]]></http:headers>
+		</http:request>
+					</batch:aggregator>
+					<ee:transform doc:name="Transform Message" doc:id="17858ee4-2e75-4849-95f6-17bdba4bf576" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[payload]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</batch:step>
+			</batch:process-records>
+		</batch:job>
+	</flow>
+	<flow name="scheduler-assessment-report-sfdc-dbFlow" doc:id="80150e9f-96cf-4ff0-a94e-e69bd2d6f8be" >
+		<scheduler doc:name="Scheduler" doc:id="c0a32f85-85f7-4f21-bfc7-19872fdef042" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="15" timeUnit="MINUTES"/>
+			</scheduling-strategy>
+		</scheduler>
+		<ee:transform doc:name="Transform Message" doc:id="ce889c34-2f02-4101-83d0-fc0dbf12d62a" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="transactionId" ><![CDATA[correlationId]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<os:retrieve doc:id="3fa3f380-3d6b-4964-82f2-60cb2f0f88fc" key="lastModifiedDateTime" target="lastModifiedDateTime">
+			<os:default-value ><![CDATA[#[((now() - |P24D|) >> "IST") as String {format: "dd-MM-yyyy'T'hh:mm:ss"}]]]></os:default-value>
+		</os:retrieve>
+		<set-variable value="#[((now() - |P24D|) &gt;&gt; &quot;IST&quot;) as String {format: &quot;dd-MM-yyyy'T'hh:mm:ss&quot;}]" doc:name="Set Variable" doc:id="9dc968f1-fa1b-472f-b235-d1ea0c870b80" variableName="lastModifiedDateTime"/>
+		<http:request method="GET" doc:name="Request GET Assessment Report SAPI" doc:id="c2741093-a010-438a-8d09-f4d805a49892" config-ref="HTTP_Request_configuration_Assessment_SAPI" path="${sapi.path.assessmentReport}" responseTimeout="90000000">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"x-fms-clientId" : p('clientId'),
+	"x-fms-transactionId" : vars.transactionId,
+	"x-fms-clientSecret" : p('clientSecret')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"lastModifiedDateTime" : vars.lastModifiedDateTime
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="ebb98cea-7c91-45e2-ae2e-83cbb8bc4392" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="35b679fa-edfb-42de-be5e-7c4381469f2c" name="batch-process" />
+		<os:store doc:name="Store" doc:id="52958a3d-4ea5-4189-8218-da1a8388b5dd" key="lastModifiedDateTime">
+			<os:value ><![CDATA[#[(now()>> "IST") as String {format: "dd-MM-yyyy'T'hh:mm:ss"}]]]></os:value>
+		</os:store>
+	</flow>
+</mule>
